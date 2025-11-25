@@ -3,33 +3,42 @@ const express = require('express');
 const app = express();
 
 
-app.get('/user', (req, res) => {
-    res.send({"firstName": "Nikita", "lastName": "Singh"});
+app.get(/\/ab?c$/, (req, res) => {
+    // $- end with c else abcd also accepts
+    res.send("Matches abc or ac");
 });
 
-app.post('/user', (req, res) => {
-    res.send("Data saved successfully");
+app.get(/\/ab+c$/, (req, res) => {
+    res.send("Matches one or more occurrences of b")
 });
 
-app.delete('/user', (req, res) => {
-    res.send("Data deleted successfully");
+app.get(/\ab*cd$/, (req, res) => {
+    res.send("Matches anything with prefix ab and suffix cd");
 });
 
-app.put('/user', (req, res) => {
-    res.send("Data updated successfully");
+app.get(/\/a(bc)?d/, (req, res) => {
+    res.send("Matches abcd or ad or ad<anything> or abcd<anything>");
 });
 
-app.patch('/user', (req, res) => {
-    res.send("Data patched successfully");
+app.get(/\/a(bc)+d$/, (req, res) => {
+    res.send("Matches abcd, abcbcd, abcbcbcd, but no ad");
+})
+
+app.get(/\/a$/, (req, res) => {
+    res.send("Matches only a");
+    // /\/a/ : Matches anything that contains a
 });
 
-
-app.use('/test', (req, res) => {
-    res.send("This is a test route");
+app.get(/\/fly$/, (req, res) => {
+    res.send("Matches only fly");
 });
 
-app.use('/', (req, res) => {
-    res.send("Hello from Server");
+app.get(/\/.fly$/, (req, res) => {
+    res.send("Matches any one character before fly");
+});
+
+app.get(/\/*fly$/, (req, res) => {
+    res.send("Matches zero or more characters before fly");
 });
 
 
