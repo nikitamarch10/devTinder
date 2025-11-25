@@ -2,45 +2,27 @@ const express = require('express');
 
 const app = express();
 
+// Query Params
 
-app.get(/\/ab?c$/, (req, res) => {
-    // $- end with c else abcd also accepts
-    res.send("Matches abc or ac");
+// localhost:7777/user?userId=101&name=Nikita
+app.get('/user', (req, res) => {
+    console.log(req.query);
+    res.send("Query Params received: " + JSON.stringify(req.query));
 });
 
-app.get(/\/ab+c$/, (req, res) => {
-    res.send("Matches one or more occurrences of b")
+// Dynamic Routes- use : to denote dynamic part
+
+// localhost:7777/user/101
+app.get('/user/:userId', (req, res) => {
+    console.log("Dynamic route: " + req.params.userId);
+    res.send("userId: " + JSON.stringify(req.params));
 });
 
-app.get(/\ab*cd$/, (req, res) => {
-    res.send("Matches anything with prefix ab and suffix cd");
+//localhost:7777/user/101/nikita/testing
+app.get('/user/:userId/:name/:password', (req, res) => {
+    console.log(req.params);
+    res.send(req.params);
 });
-
-app.get(/\/a(bc)?d/, (req, res) => {
-    res.send("Matches abcd or ad or ad<anything> or abcd<anything>");
-});
-
-app.get(/\/a(bc)+d$/, (req, res) => {
-    res.send("Matches abcd, abcbcd, abcbcbcd, but no ad");
-})
-
-app.get(/\/a$/, (req, res) => {
-    res.send("Matches only a");
-    // /\/a/ : Matches anything that contains a
-});
-
-app.get(/\/fly$/, (req, res) => {
-    res.send("Matches only fly");
-});
-
-app.get(/\/.fly$/, (req, res) => {
-    res.send("Matches any one character before fly");
-});
-
-app.get(/\/*fly$/, (req, res) => {
-    res.send("Matches zero or more characters before fly");
-});
-
 
 app.listen(7777, (req, res) => {
     console.log("Server is listening on port 7777");
