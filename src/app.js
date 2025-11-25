@@ -1,27 +1,24 @@
 const express = require('express');
+const {userAuth, adminAuth} = require('./middlewares/auth');
 
 const app = express();
 
-// Query Params
+app.use('/admin', adminAuth);
 
-// localhost:7777/user?userId=101&name=Nikita
-app.get('/user', (req, res) => {
-    console.log(req.query);
-    res.send("Query Params received: " + JSON.stringify(req.query));
+app.get('/admin/getAllData', (req, res) => {
+    res.send("All Data Sent");
 });
 
-// Dynamic Routes- use : to denote dynamic part
-
-// localhost:7777/user/101
-app.get('/user/:userId', (req, res) => {
-    console.log("Dynamic route: " + req.params.userId);
-    res.send("userId: " + JSON.stringify(req.params));
+app.get('/admin/deleteData', (req, res) => {
+    res.send("Data Deleted");
 });
 
-//localhost:7777/user/101/nikita/testing
-app.get('/user/:userId/:name/:password', (req, res) => {
-    console.log(req.params);
-    res.send(req.params);
+app.post('/user/login', (req, res) => {
+    res.send("User logged in");
+});
+
+app.get('/user/data', userAuth, (req, res) => {
+    res.send(" firstName: Nikita")
 });
 
 app.listen(7777, (req, res) => {
