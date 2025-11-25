@@ -1,42 +1,43 @@
 const express = require('express');
 
+const connectDB = require('./config/database');
+const User = require('./models/user');
+
+// not best way since server is already listening and what if DB connection fails, 
+// it is better to have DB connection before server starts listening
+// require('./config/database');
+
 const app = express();
 
-// best way to handle errors - try & catch
-app.get('/getUserData2', (req, res) => {
+app.post('/signup', async (req, res) => {
+    const userObj = {
+        firstName: "Virat",
+        LastName: "Kohli",
+        email: "virat@kohli.com",
+        password: "virat@123",
+        age: 25,
+        gender: "male"
+    };
+
+    const user = new User(userObj);
+
     try {
-        // logic
-        throw new Error("dnfjhgjk");
-        res.send("User Data Sent");
+        await user.save();
+        res.send("User added successfully");
     } catch (err) {
-          res.status(500).send('Some Error Occurred, please try again later');
+        res.status(400).send("Error saving the user " + err.message);
     }
 });
 
-// ERROR HANDLING using wildcard - below-
-
-app.get('/getUserData', (req, res) => {
-    // logic that might trigger an error
-    throw new Error("dnfjhgjk"); // eg: database connection failure
-    res.send("User Data Sent");
-});
-
-// wildcard error handling - always keep it at the end
-app.use((err, req, res, next) => {
-    if (err) {
-        res.status(500).send('Something went wrong');
-    }
-});
-
-
-
-
-
-
-
-app.listen(7777, (req, res) => {
-    console.log("Server is listening on port 7777");
-});
-
+connectDB()
+    .then(() => {
+        console.log("Database connected successfully");
+        app.listen(7777, () => {
+            console.log("Server is listening on port 7777");
+        });
+    })
+    .catch((err) => {
+        console.error("Database connection failed");
+    });
 
 
