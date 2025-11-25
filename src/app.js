@@ -3,12 +3,29 @@ const express = require('express');
 const app = express();
 
 
-app.use('/test', (req, res) => {
-    res.send("This is a test route");
+app.get('/user', (req, res) => {
+    res.send({"firstName": "Nikita", "lastName": "Singh"});
 });
 
-app.use('/hello', (req, res) => {
-    res.send("Hello hello hello!");
+app.post('/user', (req, res) => {
+    res.send("Data saved successfully");
+});
+
+app.delete('/user', (req, res) => {
+    res.send("Data deleted successfully");
+});
+
+app.put('/user', (req, res) => {
+    res.send("Data updated successfully");
+});
+
+app.patch('/user', (req, res) => {
+    res.send("Data patched successfully");
+});
+
+
+app.use('/test', (req, res) => {
+    res.send("This is a test route");
 });
 
 app.use('/', (req, res) => {
