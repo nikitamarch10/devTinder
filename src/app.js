@@ -70,11 +70,8 @@ app.get('/findById', async (req, res) => {
     try {
         const userId = req.body._id;
 
-        console.log(userId);
-
         // findById(id) is equivalent to findOne({ _id: id })
         const user = await User.findById(userId);
-        console.log(user);
         if (!user) {
             res.status(404).send("User not found");
         } else {
