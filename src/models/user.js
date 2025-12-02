@@ -42,7 +42,13 @@ const userSchema = new mongoose.Schema({
         default: "This is default about of the user"
     },
     skills: {
-        type: [String]
+        type: [String],
+        validate: {
+            validator: function(arr) {
+                return arr.length <= 10;
+            },
+            message: 'Skills cannot exceed 10 items'
+        }
     }
 }, 
 {
