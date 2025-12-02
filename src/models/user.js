@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -15,7 +16,12 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
         lowercase: true,
-        trim: true
+        trim: true,
+        validate(value) {
+            if (!validator.isEmail(value)) {
+                throw new Error("invalid email");
+            }
+        }
     },
     password: {
         type: String,
@@ -35,7 +41,12 @@ const userSchema = new mongoose.Schema({
     },
     photoURL: {
         type: String,
-        default: "https://www.kindpng.com/imgv/bmmTxJ_student-png-sammilani-mahavidyalaya-undergraduate-and-dummy-user/"
+        default: "https://www.kindpng.com/imgv/bmmTxJ_student-png-sammilani-mahavidyalaya-undergraduate-and-dummy-user/",
+        validate(value) {
+            if (!validator.isURL(value)) {
+                throw new Error("invalid photo url");
+            }
+        }
     },
     about: {
         type: String,
