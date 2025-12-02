@@ -34,6 +34,31 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+app.post('/login', async (req, res) => {
+    console.log(req.body);
+    try {
+        console.log(req.body);
+        const {emailId, password} = req.body;
+
+        const user = await User.findOne({emailId: emailId});
+
+        if (!user) {
+            // Changed error messages to generic "Invalid credentials" (security best practice - don't reveal if user exists or password is wrong)
+            throw new Error("Invalid credentials");
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            throw new Error("Invalid credentials");
+        }
+
+        res.send("Login successful");
+    } catch (err) {
+        res.status(400).send("ERROR: " + err.message);
+    }
+});
+
 // Feed API
 app.get('/feed', async (req, res) => {
     try {
