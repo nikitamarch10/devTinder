@@ -1,8 +1,9 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
 const {validateSignUpData} = require('./utils/validation');
-
 const connectDB = require('./config/database');
 const User = require('./models/user');
+const salt = 10;
 
 // not best way since server is already listening and what if DB connection fails, it is better to have DB connection before server starts listening
 // require('./config/database');
@@ -14,8 +15,17 @@ app.use(express.json());
 app.post('/signup', async (req, res) => {
     try {
         validateSignUpData(req);
+
         const {firstName, lastName, emailId, password} = req.body;
-        const user = new User({firstName, lastName, emailId, password});
+
+        const passwordHash = await bcrypt.hash(password, salt);
+
+        const user = new User({
+            firstName, 
+            lastName, 
+            emailId, 
+            password: passwordHash
+        });
 
         await user.save();
         res.send("User added successfully");
