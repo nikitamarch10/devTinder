@@ -1,16 +1,16 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
 const {validateSignUpData} = require('./utils/validation');
 const connectDB = require('./config/database');
 const User = require('./models/user');
+const {userAuth} = require('./middlewares/auth');
 const salt = 10;
-
-// not best way since server is already listening and what if DB connection fails, it is better to have DB connection before server starts listening
-// require('./config/database');
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.post('/signup', async (req, res) => {
     try {
@@ -35,9 +35,7 @@ app.post('/signup', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    console.log(req.body);
     try {
-        console.log(req.body);
         const {emailId, password} = req.body;
 
         const user = await User.findOne({emailId: emailId});
@@ -47,120 +45,40 @@ app.post('/login', async (req, res) => {
             throw new Error("Invalid credentials");
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await user.validatePassword(password);
 
         if (!isPasswordValid) {
             throw new Error("Invalid credentials");
         }
 
+        const token = await user.getJWT();
+
+        // Add the token to cookie and send the response back to the user
+        res.cookie("token", token, {expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)}); //7d
         res.send("Login successful");
     } catch (err) {
         res.status(400).send("ERROR: " + err.message);
     }
 });
 
-// Feed API
-app.get('/feed', async (req, res) => {
+app.get('/profile', userAuth, async (req, res) => {
     try {
-        const users = await User.find({});
-        res.send(users);
+        const user = req.user;
+        res.send(user);
     } catch (err) {
-        res.status(400).send("Something went wrong");
+        res.status(400).send("ERROR: " + err.message);
     }
 });
 
-app.get('/user', async (req, res) => {
+app.post('/sendConnectionRequest', userAuth, async(req, res) => {
     try {
-        const userEmail = req.body.emailId;
+        const user = req.user;
+    
+        console.log("Sending connection request");
 
-        console.log(userEmail);
-        const users = await User.find({ emailId: userEmail });
-
-        if (users.length === 0) {
-            res.status(404).send("User not found");
-        } else {
-            res.send(users);
-        }
+        res.send(user.firstName + " sent connection request");
     } catch (err) {
-        res.status(400).send("Something went wrong");
-    }
-});
-
-app.delete('/user', async (req, res) => {
-    const userId = req.body.userId;
-    try {
-        const user = await User.findByIdAndDelete(userId);
-
-        if (!user) {
-            res.status(404).send("User not found");
-        } else {
-            res.send("User deleted successfully");
-        }
-    } catch (err) {
-        res.status(400).send("Something went wrong");
-    }
-});
-
-app.patch('/user/:userId', async (req, res) => {
-    const userId = req.params?.userId;
-    const data = req.body;
-
-    try {
-        const ALLOWED_UPDATES = ["photoURL", "gender", "about", "age", "skills"];
-        const isUpdateAllowed = Object.keys(data).every((key) => ALLOWED_UPDATES.includes(key));
-        
-        if (!isUpdateAllowed) {
-            throw new Error("Update not allowed");
-        }
-
-        if (data?.skills.length > 10) {
-            throw new Error("Skills cannot be more than 10");
-        }
-
-        const user = await User.findByIdAndUpdate({_id: userId}, data,
-            {
-                returnDocument: "after",
-                runValidators: true
-            });
-
-        console.log(user);
-
-        res.send("User updated successfully");
-    } catch (err) {
-        res.status(400).send("Something went wrong " + err.message);
-    }
-});
-
-// Exploring findOne
-app.get('/findOne', async (req, res) => {
-    try {
-        const userEmail = req.body.emailId;
-        const user = await User.findOne({ emailId: userEmail });
-
-        if (!user) {
-            res.status(404).send("User not found");
-        } else {
-            res.send(user);
-        }
-    } catch (err) {
-        res.status(400).send("Something went wrong");
-    }
-});
-
-// Exploring findById
-app.get('/findById', async (req, res) => {
-    try {
-        const userId = req.body._id;
-
-        // findById(id) is equivalent to findOne({ _id: id })
-        const user = await User.findById(userId);
-        if (!user) {
-            res.status(404).send("User not found");
-        } else {
-            res.send(user);
-        }
-    } catch (err) {
-        res.status(400).send("Something went wrong " + err.message);
+        res.status(400).send("ERROR: " + err.message);
     }
 });
 
